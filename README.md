@@ -705,7 +705,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 ruff check .
-pytest
+python -m pytest
 ```
 
 Set development `DATABASE_URL`, `REDIS_URL`, and `SECRET_KEY` values, then run:

@@ -12,7 +12,7 @@ test-frontend:
 	npm test
 
 test-backend:
-	cd backend && ruff check . && pytest -q
+	cd backend && ruff check . && python -m pytest -q
 
 compose-up:
 	docker compose pull

@@ -135,6 +135,28 @@ images. You can instead build both application images from this checkout with
 the source-build command shown below. PostgreSQL and Redis are downloaded from
 their official public images in either case.
 
+### Public Docker Hub images
+
+Raven Ledger publishes ready-to-run application images publicly on Docker Hub.
+They support both `linux/amd64` and `linux/arm64`, require no registry login to
+pull, and are the default images used by `docker-compose.yml`:
+
+- [Backend and worker](https://hub.docker.com/r/mntdew1031/raven-ledger-backend)
+- [Frontend](https://hub.docker.com/r/mntdew1031/raven-ledger-frontend)
+
+You may pre-pull the release before starting the stack:
+
+```bash
+docker pull docker.io/mntdew1031/raven-ledger-backend:1.76.0
+docker pull docker.io/mntdew1031/raven-ledger-frontend:1.76.0
+```
+
+Manual pulls are optional. Running `docker compose up -d` later performs the
+same pulls automatically and also starts PostgreSQL, Redis, the backend, the
+worker, and the frontend with the required networks and persistent volumes.
+The application images are not intended to be run alone without their service
+configuration and dependencies.
+
 ### 1. Clone and enter the repository
 
 ```bash

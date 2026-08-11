@@ -1,0 +1,204 @@
+name: raven-ledger
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-raven}
+      POSTGRES_USER: ${POSTGRES_USER:-raven}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-raven} -d ${POSTGRES_DB:-raven}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [raven]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    command:
+      - sh
+      - -c
+      - >-
+        if [ -n "$$REDIS_PASSWORD" ]; then
+          exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+        else
+          exec redis-server --appendonly yes;
+        fi
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "if [ -n \"$$REDIS_PASSWORD\" ]; then REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping; else redis-cli ping; fi",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [raven]
+
+  backend:
+    image: ${BACKEND_IMAGE:-docker.io/mntdew1031/raven-ledger-backend:1.76.0}
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    read_only: true
+    pids_limit: 200
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    environment:
+      ENVIRONMENT: ${RAVEN_ENVIRONMENT:-production}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-raven}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-raven}
+      REDIS_URL: ${RAVEN_REDIS_URL:-redis://redis:6379/0}
+      SECRET_KEY: ${RAVEN_SECRET_KEY:?Set RAVEN_SECRET_KEY in .env}
+      ENCRYPTION_KEY: ${RAVEN_ENCRYPTION_KEY:?Set RAVEN_ENCRYPTION_KEY in .env}
+      FRONTEND_URL: ${FRONTEND_URL:?Set FRONTEND_URL to the public HTTPS URL}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12}
+      MAX_REQUEST_BODY_BYTES: ${MAX_REQUEST_BODY_BYTES:-8388608}
+      SECURITY_EVENT_RETENTION_DAYS: ${SECURITY_EVENT_RETENTION_DAYS:-365}
+      ALLOW_PUBLIC_REGISTRATION: ${ALLOW_PUBLIC_REGISTRATION:-false}
+      PLAID_ENVIRONMENT: ${PLAID_ENVIRONMENT:-sandbox}
+      PLAID_CLIENT_ID: ${PLAID_CLIENT_ID:-}
+      PLAID_SECRET: ${PLAID_SECRET:-}
+      PLAID_WEBHOOK_URL: ${PLAID_WEBHOOK_URL:-}
+      PLAID_REDIRECT_URI: ${PLAID_REDIRECT_URI:-}
+      # How many bank connections the Plaid plan allows. Unset means no limit
+      # is enforced — Plaid's tiers change, so this comes from the billing
+      # dashboard rather than a guess in the code.
+      PLAID_CONNECTION_LIMIT: ${PLAID_CONNECTION_LIMIT:-}
+      # Merchants per categorization request. 2 for a small local model, 40 for
+      # a large one; measured, see the AI settings panel.
+      LLM_BATCH_SIZE: ${LLM_BATCH_SIZE:-40}
+      LLM_MIN_BATCH_SIZE: ${LLM_MIN_BATCH_SIZE:-4}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-SP-gemma4:26b}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-120}
+      BACKUP_DIR: /backups
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+      OPERATOR_EMAILS: ${RAVEN_OPERATOR_EMAILS:-}
+    volumes:
+      - backup_data:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose: ["8000"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [raven]
+
+  worker:
+    image: ${BACKEND_IMAGE:-docker.io/mntdew1031/raven-ledger-backend:1.76.0}
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    read_only: true
+    pids_limit: 200
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    command: ["arq", "app.worker.WorkerSettings"]
+    environment:
+      ENVIRONMENT: ${RAVEN_ENVIRONMENT:-production}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-raven}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-raven}
+      REDIS_URL: ${RAVEN_REDIS_URL:-redis://redis:6379/0}
+      SECRET_KEY: ${RAVEN_SECRET_KEY:?Set RAVEN_SECRET_KEY in .env}
+      ENCRYPTION_KEY: ${RAVEN_ENCRYPTION_KEY:?Set RAVEN_ENCRYPTION_KEY in .env}
+      PLAID_ENVIRONMENT: ${PLAID_ENVIRONMENT:-sandbox}
+      PLAID_CLIENT_ID: ${PLAID_CLIENT_ID:-}
+      PLAID_SECRET: ${PLAID_SECRET:-}
+      PLAID_WEBHOOK_URL: ${PLAID_WEBHOOK_URL:-}
+      PLAID_REDIRECT_URI: ${PLAID_REDIRECT_URI:-}
+      # How many bank connections the Plaid plan allows. Unset means no limit
+      # is enforced — Plaid's tiers change, so this comes from the billing
+      # dashboard rather than a guess in the code.
+      PLAID_CONNECTION_LIMIT: ${PLAID_CONNECTION_LIMIT:-}
+      # Merchants per categorization request. 2 for a small local model, 40 for
+      # a large one; measured, see the AI settings panel.
+      LLM_BATCH_SIZE: ${LLM_BATCH_SIZE:-40}
+      LLM_MIN_BATCH_SIZE: ${LLM_MIN_BATCH_SIZE:-4}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-SP-gemma4:26b}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-120}
+      BACKUP_DIR: /backups
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+      SECURITY_EVENT_RETENTION_DAYS: ${SECURITY_EVENT_RETENTION_DAYS:-365}
+      OPERATOR_EMAILS: ${RAVEN_OPERATOR_EMAILS:-}
+    volumes:
+      - backup_data:/backups
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [raven]
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-docker.io/mntdew1031/raven-ledger-frontend:1.76.0}
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    read_only: true
+    pids_limit: 200
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /app/.next/cache:size=64m,mode=1777
+    environment:
+      API_INTERNAL_URL: http://backend:8000
+      SESSION_COOKIE_NAME: ${RAVEN_SESSION_COOKIE_NAME:-__Host-raven_session}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3000",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [raven]
+
+volumes:
+  postgres_data:
+  redis_data:
+  backup_data:
+
+networks:
+  raven:
+    driver: bridge

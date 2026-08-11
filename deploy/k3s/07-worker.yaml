@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: raven-ledger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          # Use exactly the same backend image as the API deployment.
+          image: docker.io/mntdew1031/raven-ledger-backend:1.76.0
+          imagePullPolicy: IfNotPresent
+          command: ["arq", "app.worker.WorkerSettings"]
+          envFrom:
+            - configMapRef:
+                name: raven-config
+            - secretRef:
+                name: raven-secrets
+          volumeMounts:
+            - name: backups
+              mountPath: /backups
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+      volumes:
+        - name: backups
+          persistentVolumeClaim:
+            claimName: raven-backups

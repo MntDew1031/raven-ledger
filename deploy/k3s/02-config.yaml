@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: raven-config
+  namespace: raven-ledger
+data:
+  ENVIRONMENT: production
+  REDIS_URL: redis://redis:6379/0
+  FRONTEND_URL: https://finance.example.com
+  COOKIE_SECURE: "true"
+  SESSION_COOKIE_NAME: __Host-raven_session
+  # Login/device/security activity older than this is removed nightly.
+  SECURITY_EVENT_RETENTION_DAYS: "365"
+  # Leave false so only invited people can join after the first household.
+  ALLOW_PUBLIC_REGISTRATION: "false"
+  PLAID_ENVIRONMENT: sandbox
+  PLAID_WEBHOOK_URL: https://finance.example.com/api/v1/plaid/webhook
+  PLAID_REDIRECT_URI: https://finance.example.com/plaid/oauth
+  # How many bank connections this Plaid plan allows. Empty means no limit is
+  # enforced — Plaid's tiers change, so this comes from the billing dashboard
+  # rather than a guess baked into the code. With it set, Raven shows what is
+  # left and refuses a new link before Plaid does.
+  PLAID_CONNECTION_LIMIT: ""
+  API_INTERNAL_URL: http://backend:8000
+  # Who may take a backup and change instance-wide settings — the model picker
+  # in Settings is one of them, because a model is chosen once for the whole
+  # install rather than per household. Comma-separated sign-in addresses.
+  #
+  # Leaving this empty means *nobody* holds that authority, and the picker
+  # saves nothing: this was missing here, and the symptom was a model choice in
+  # the UI that appeared to do nothing at all. Deliberately not a household
+  # role — an owner of one household must not be able to dump every other one.
+  #
+  # `RAVEN_OPERATOR_EMAILS` is accepted too. That is the name Compose maps
+  # from, and it is the name every document gives, so setting it here rather
+  # than the one the container reads is the obvious mistake to make.
+  OPERATOR_EMAILS: ""
+  # Optional local AI endpoint for category suggestions (llama.cpp /v1 root).
+  LLM_BASE_URL: ""
+  LLM_MODEL: SP-gemma4:26b
+  # Merchants per categorization request. Small local models generally work
+  # best with smaller batches; raise this for a larger model.
+  LLM_MIN_BATCH_SIZE: "4"

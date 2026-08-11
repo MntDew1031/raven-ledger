@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Raven feather">
+  <rect width="512" height="512" fill="#000000" />
+  <path
+    fill="#ffffff"
+    d="M118 380c-13-69 8-130 54-169 42-36 99-53 177-58l41-34 17 19-39 32c-18 72-58 140-113 184-40 33-89 43-137 26Z"
+  />
+  <g fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="12" d="M135 365 389 139" />
+    <path stroke-width="10" d="m165 338-8-56m35 32-15-62m44 36-22-65m51 38-26-61m57 31-27-49m57 23-26-31" />
+    <path stroke-width="10" d="m166 338 52 22m-26-47 62 28m-33-54 68 29m-39-56 66 26m-35-56 57 22m-27-47 40 14" />
+  </g>
+</svg>

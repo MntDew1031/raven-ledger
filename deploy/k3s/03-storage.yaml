@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: raven-ledger
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data
+  namespace: raven-ledger
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 2Gi
+---
+# Database dumps. ReadWriteMany so the worker can write the nightly backup and
+# the backend can serve it for download; on a single-node cluster RWO also
+# works, but both pods must then land on the same node.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: raven-backups
+  namespace: raven-ledger
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 10Gi

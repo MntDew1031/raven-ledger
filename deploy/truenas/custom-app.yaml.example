@@ -1,0 +1,176 @@
+name: raven-ledger
+
+networks:
+  raven:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: raven
+      POSTGRES_USER: raven
+      POSTGRES_PASSWORD: REPLACE_WITH_EXISTING_POSTGRES_PASSWORD
+    volumes:
+      - type: bind
+        source: /mnt/main/raven-ledger/postgres
+        target: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U raven -d raven"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [raven]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - type: bind
+        source: /mnt/main/raven-ledger/redis
+        target: /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [raven]
+
+  backend:
+    image: docker.io/mntdew1031/raven-ledger-backend:1.76.0
+    pull_policy: always
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    pids_limit: 200
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://raven:REPLACE_WITH_URL_ENCODED_POSTGRES_PASSWORD@postgres:5432/raven
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: REPLACE_WITH_EXISTING_SECRET_KEY
+      ENCRYPTION_KEY: REPLACE_WITH_EXISTING_ENCRYPTION_KEY
+      FRONTEND_URL: https://finance.example.com
+      COOKIE_SECURE: "true"
+      TRUSTED_PROXY_CIDRS: 127.0.0.1/32,::1/128,10.0.0.0/8,172.16.0.0/12
+      MAX_REQUEST_BODY_BYTES: "8388608"
+      SECURITY_EVENT_RETENTION_DAYS: "365"
+      ALLOW_PUBLIC_REGISTRATION: "false"
+      PLAID_ENVIRONMENT: production
+      PLAID_CLIENT_ID: REPLACE_WITH_EXISTING_PLAID_CLIENT_ID
+      PLAID_SECRET: REPLACE_WITH_EXISTING_PLAID_SECRET
+      PLAID_REDIRECT_URI: https://finance.example.com/plaid/oauth
+      PLAID_WEBHOOK_URL: https://finance.example.com/api/v1/plaid/webhook
+      LLM_BASE_URL: http://llm-server:8080/v1
+      LLM_API_KEY: REPLACE_WITH_EXISTING_LLM_API_KEY
+      LLM_MODEL: SP-gemma4:26b
+      LLM_MIN_BATCH_SIZE: "4"
+      LLM_TIMEOUT_SECONDS: "120"
+      RAVEN_OPERATOR_EMAILS: operator@example.com
+      BACKUP_DIR: /backups
+      BACKUP_KEEP: "14"
+    volumes:
+      # TrueNAS must allow container UID 100 / GID 101 to write this dataset.
+      - type: bind
+        source: /mnt/main/raven-ledger/backups
+        target: /backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/health')
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [raven]
+
+  worker:
+    image: docker.io/mntdew1031/raven-ledger-backend:1.76.0
+    pull_policy: always
+    restart: unless-stopped
+    command: ["arq", "app.worker.WorkerSettings"]
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    pids_limit: 200
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://raven:REPLACE_WITH_URL_ENCODED_POSTGRES_PASSWORD@postgres:5432/raven
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: REPLACE_WITH_EXISTING_SECRET_KEY
+      ENCRYPTION_KEY: REPLACE_WITH_EXISTING_ENCRYPTION_KEY
+      PLAID_ENVIRONMENT: production
+      PLAID_CLIENT_ID: REPLACE_WITH_EXISTING_PLAID_CLIENT_ID
+      PLAID_SECRET: REPLACE_WITH_EXISTING_PLAID_SECRET
+      PLAID_REDIRECT_URI: https://finance.example.com/plaid/oauth
+      PLAID_WEBHOOK_URL: https://finance.example.com/api/v1/plaid/webhook
+      LLM_BASE_URL: http://llm-server:8080/v1
+      LLM_API_KEY: REPLACE_WITH_EXISTING_LLM_API_KEY
+      LLM_MODEL: SP-gemma4:26b
+      LLM_MIN_BATCH_SIZE: "4"
+      LLM_TIMEOUT_SECONDS: "120"
+      RAVEN_OPERATOR_EMAILS: operator@example.com
+      BACKUP_DIR: /backups
+      BACKUP_KEEP: "14"
+      SECURITY_EVENT_RETENTION_DAYS: "365"
+    volumes:
+      # Same writable backup dataset and permissions as the backend.
+      - type: bind
+        source: /mnt/main/raven-ledger/backups
+        target: /backups
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [raven]
+
+  frontend:
+    image: docker.io/mntdew1031/raven-ledger-frontend:1.76.0
+    pull_policy: always
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    pids_limit: 200
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /app/.next/cache:size=64m,mode=1777
+    environment:
+      API_INTERNAL_URL: http://backend:8000
+      SESSION_COOKIE_NAME: __Host-raven_session
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "31020:3000"
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --tries=1
+        - --spider
+        - http://127.0.0.1:3000
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks: [raven]

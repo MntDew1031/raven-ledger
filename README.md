@@ -1,5 +1,9 @@
 # Raven Ledger
 
+[![CI](https://github.com/MntDew1031/raven-ledger/actions/workflows/ci.yml/badge.svg)](https://github.com/MntDew1031/raven-ledger/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/MntDew1031/raven-ledger)](https://github.com/MntDew1031/raven-ledger/releases)
+[![License](https://img.shields.io/github/license/MntDew1031/raven-ledger)](LICENSE)
+
 Raven Ledger is a self-hosted household finance application. It combines a
 shared transaction ledger, account and net-worth tracking, category or flex
 budgeting, recurring-item detection, cash-flow reporting, bank synchronization
@@ -147,8 +151,8 @@ pull, and are the default images used by `docker-compose.yml`:
 You may pre-pull the release before starting the stack:
 
 ```bash
-docker pull docker.io/mntdew1031/raven-ledger-backend:1.76.0
-docker pull docker.io/mntdew1031/raven-ledger-frontend:1.76.0
+docker pull docker.io/mntdew1031/raven-ledger-backend:1.76.1
+docker pull docker.io/mntdew1031/raven-ledger-frontend:1.76.1
 ```
 
 Manual pulls are optional. Running `docker compose up -d` later performs the
@@ -214,8 +218,8 @@ do not paste it into issues or chat.
 docker compose up -d
 ```
 
-This pulls `mntdew1031/raven-ledger-backend:1.76.0` and
-`mntdew1031/raven-ledger-frontend:1.76.0` when they are not already cached. To
+This pulls `mntdew1031/raven-ledger-backend:1.76.1` and
+`mntdew1031/raven-ledger-frontend:1.76.1` when they are not already cached. To
 compile the exact checkout locally instead, run:
 
 ```bash
@@ -318,16 +322,16 @@ Compose uses the public versioned images by default. Override the names to pin
 digests, test another release, or use your own registry:
 
 ```dotenv
-BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend:1.76.0
-FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend:1.76.0
+BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend:1.76.1
+FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend:1.76.1
 ```
 
-Release `1.76.0` was published for `linux/amd64` and `linux/arm64`. For an
+Release `1.76.1` was published for `linux/amd64` and `linux/arm64`. For an
 immutable deployment, pin the verified multi-architecture index digests:
 
 ```dotenv
-BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend@sha256:bce3e7b16e05f169340b22a277026e7ee67858380e69af1bbc82cc31742a853a
-FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend@sha256:d724b37c71ae19af2905fb856d8f58e86ace37834522f3145530c2f5bbf1e6b4
+BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend@sha256:070f57b64277fe4a206cba1d4c37a1e64e515230854a8a6ea14e86309c392cdd
+FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend@sha256:0c845aeedaefebbfaef2da66a7fc0b18ecb11d21e3926a94ac79d377e5a72f22
 ```
 
 Docker Hub listings: [backend and worker](https://hub.docker.com/r/mntdew1031/raven-ledger-backend)
@@ -548,15 +552,16 @@ backup and the matching encryption key instead of guessing.
 
 ## TrueNAS
 
-TrueNAS SCALE can run the root `docker-compose.yml` as a Custom App. The
-Compose file uses named volumes and builds the application images from source.
-If your TrueNAS version cannot build from a Git checkout, publish sanitized
-images to your registry first and use
-`deploy/truenas/custom-app.yaml.example` as the starting point.
+TrueNAS SCALE can run Raven Ledger as a Custom App. The root
+`docker-compose.yml` uses named volumes and defaults to the published,
+version-pinned application images; pass `--build` from a Git checkout to build
+them locally instead. For persistent TrueNAS datasets and a paste-ready image
+deployment, use `deploy/truenas/custom-app.yaml.example` as the starting point.
 
 Before pasting the example:
 
-1. Replace every `REPLACE_WITH_...` placeholder.
+1. Replace every `REPLACE_WITH_...` placeholder. Plaid and local AI remain
+   disabled in the example until you deliberately configure them.
 2. Change `finance.example.com` to your hostname.
 3. Change `/mnt/main/raven-ledger/...` to datasets that exist on your pool.
 4. Give the backend container user write access to the backup dataset. The
@@ -619,8 +624,8 @@ same node.
 Build clean images from this sanitized source tree:
 
 ```bash
-docker build --pull -f backend/Dockerfile -t raven-ledger-backend:1.76.0 .
-docker build --pull -f Dockerfile.frontend -t raven-ledger-frontend:1.76.0 .
+docker build --pull -f backend/Dockerfile -t raven-ledger-backend:1.76.1 .
+docker build --pull -f Dockerfile.frontend -t raven-ledger-frontend:1.76.1 .
 ```
 
 Both builds use the root `.dockerignore`; virtual environments, dependency and
@@ -631,10 +636,10 @@ instruction files are excluded. Both runtime images include `LICENSE` and
 Inspect before publishing:
 
 ```bash
-docker image inspect raven-ledger-backend:1.76.0
-docker image inspect raven-ledger-frontend:1.76.0
-docker history --no-trunc raven-ledger-backend:1.76.0
-docker history --no-trunc raven-ledger-frontend:1.76.0
+docker image inspect raven-ledger-backend:1.76.1
+docker image inspect raven-ledger-frontend:1.76.1
+docker history --no-trunc raven-ledger-backend:1.76.1
+docker history --no-trunc raven-ledger-frontend:1.76.1
 ```
 
 Confirm there are no secrets, private URLs, personal filesystem paths, `.env`
@@ -649,14 +654,14 @@ docker buildx create --use --name raven-builder
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --file backend/Dockerfile \
-  --tag docker.io/mntdew1031/raven-ledger-backend:1.76.0 \
+  --tag docker.io/mntdew1031/raven-ledger-backend:1.76.1 \
   --tag docker.io/mntdew1031/raven-ledger-backend:latest \
   --push .
 
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --file Dockerfile.frontend \
-  --tag docker.io/mntdew1031/raven-ledger-frontend:1.76.0 \
+  --tag docker.io/mntdew1031/raven-ledger-frontend:1.76.1 \
   --tag docker.io/mntdew1031/raven-ledger-frontend:latest \
   --push .
 ```
@@ -699,6 +704,7 @@ cd backend
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements-dev.txt
+ruff check .
 pytest
 ```
 

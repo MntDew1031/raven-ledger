@@ -8,11 +8,11 @@ both legs and the ledger believed both.
 """
 
 import uuid
-from datetime import date, timedelta
+from datetime import date
 
 import pytest
 
-from app.models import AccountKind, Transaction
+from app.models import Transaction
 from app.services import provider_categories
 from app.services.transfers import (
     PAIR_WINDOW_DAYS,

@@ -13,7 +13,7 @@ RUN npm run build
 FROM node:24-alpine AS runner
 
 LABEL org.opencontainers.image.title="Raven Ledger frontend" \
-  org.opencontainers.image.version="1.76.0" \
+  org.opencontainers.image.version="1.76.1" \
   org.opencontainers.image.licenses="Apache-2.0"
 
 WORKDIR /app
@@ -22,7 +22,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs \
+  && adduser --system --uid 1001 --ingroup nodejs nextjs \
   && npm uninstall --global npm
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

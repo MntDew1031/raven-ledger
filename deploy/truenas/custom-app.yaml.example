@@ -39,7 +39,7 @@ services:
     networks: [raven]
 
   backend:
-    image: docker.io/mntdew1031/raven-ledger-backend:1.76.0
+    image: docker.io/mntdew1031/raven-ledger-backend:1.76.1
     pull_policy: always
     restart: unless-stopped
     security_opt:
@@ -62,13 +62,15 @@ services:
       MAX_REQUEST_BODY_BYTES: "8388608"
       SECURITY_EVENT_RETENTION_DAYS: "365"
       ALLOW_PUBLIC_REGISTRATION: "false"
-      PLAID_ENVIRONMENT: production
-      PLAID_CLIENT_ID: REPLACE_WITH_EXISTING_PLAID_CLIENT_ID
-      PLAID_SECRET: REPLACE_WITH_EXISTING_PLAID_SECRET
+      # Optional. Leave sandbox credentials blank to disable bank sync.
+      PLAID_ENVIRONMENT: sandbox
+      PLAID_CLIENT_ID: ""
+      PLAID_SECRET: ""
       PLAID_REDIRECT_URI: https://finance.example.com/plaid/oauth
       PLAID_WEBHOOK_URL: https://finance.example.com/api/v1/plaid/webhook
-      LLM_BASE_URL: http://llm-server:8080/v1
-      LLM_API_KEY: REPLACE_WITH_EXISTING_LLM_API_KEY
+      # Optional. Set both containers to the same reachable /v1 endpoint.
+      LLM_BASE_URL: ""
+      LLM_API_KEY: ""
       LLM_MODEL: SP-gemma4:26b
       LLM_MIN_BATCH_SIZE: "4"
       LLM_TIMEOUT_SECONDS: "120"
@@ -99,7 +101,7 @@ services:
     networks: [raven]
 
   worker:
-    image: docker.io/mntdew1031/raven-ledger-backend:1.76.0
+    image: docker.io/mntdew1031/raven-ledger-backend:1.76.1
     pull_policy: always
     restart: unless-stopped
     command: ["arq", "app.worker.WorkerSettings"]
@@ -117,13 +119,13 @@ services:
       REDIS_URL: redis://redis:6379/0
       SECRET_KEY: REPLACE_WITH_EXISTING_SECRET_KEY
       ENCRYPTION_KEY: REPLACE_WITH_EXISTING_ENCRYPTION_KEY
-      PLAID_ENVIRONMENT: production
-      PLAID_CLIENT_ID: REPLACE_WITH_EXISTING_PLAID_CLIENT_ID
-      PLAID_SECRET: REPLACE_WITH_EXISTING_PLAID_SECRET
+      PLAID_ENVIRONMENT: sandbox
+      PLAID_CLIENT_ID: ""
+      PLAID_SECRET: ""
       PLAID_REDIRECT_URI: https://finance.example.com/plaid/oauth
       PLAID_WEBHOOK_URL: https://finance.example.com/api/v1/plaid/webhook
-      LLM_BASE_URL: http://llm-server:8080/v1
-      LLM_API_KEY: REPLACE_WITH_EXISTING_LLM_API_KEY
+      LLM_BASE_URL: ""
+      LLM_API_KEY: ""
       LLM_MODEL: SP-gemma4:26b
       LLM_MIN_BATCH_SIZE: "4"
       LLM_TIMEOUT_SECONDS: "120"
@@ -142,7 +144,7 @@ services:
     networks: [raven]
 
   frontend:
-    image: docker.io/mntdew1031/raven-ledger-frontend:1.76.0
+    image: docker.io/mntdew1031/raven-ledger-frontend:1.76.1
     pull_policy: always
     restart: unless-stopped
     security_opt:

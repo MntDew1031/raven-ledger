@@ -1,4 +1,4 @@
-.PHONY: dev build test compose-up compose-down
+.PHONY: dev build test test-frontend test-backend compose-up compose-down
 
 dev:
 	npm run dev
@@ -6,8 +6,13 @@ dev:
 build:
 	npm run build
 
-test:
+test: test-frontend test-backend
+
+test-frontend:
 	npm test
+
+test-backend:
+	cd backend && ruff check . && pytest -q
 
 compose-up:
 	docker compose pull

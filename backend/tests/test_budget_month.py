@@ -9,8 +9,6 @@ August's Housing line read $1,279.87 of $1,280.50 planned — satisfied — whil
 the money had left in July and nothing told him to set September's aside.
 """
 
-from datetime import date
-
 from sqlalchemy.dialects import postgresql
 
 

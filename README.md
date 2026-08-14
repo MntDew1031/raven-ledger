@@ -151,8 +151,8 @@ pull, and are the default images used by `docker-compose.yml`:
 You may pre-pull the release before starting the stack:
 
 ```bash
-docker pull docker.io/mntdew1031/raven-ledger-backend:1.76.1
-docker pull docker.io/mntdew1031/raven-ledger-frontend:1.76.1
+docker pull docker.io/mntdew1031/raven-ledger-backend:1.76.2
+docker pull docker.io/mntdew1031/raven-ledger-frontend:1.76.2
 ```
 
 Manual pulls are optional. Running `docker compose up -d` later performs the
@@ -218,8 +218,8 @@ do not paste it into issues or chat.
 docker compose up -d
 ```
 
-This pulls `mntdew1031/raven-ledger-backend:1.76.1` and
-`mntdew1031/raven-ledger-frontend:1.76.1` when they are not already cached. To
+This pulls `mntdew1031/raven-ledger-backend:1.76.2` and
+`mntdew1031/raven-ledger-frontend:1.76.2` when they are not already cached. To
 compile the exact checkout locally instead, run:
 
 ```bash
@@ -322,16 +322,16 @@ Compose uses the public versioned images by default. Override the names to pin
 digests, test another release, or use your own registry:
 
 ```dotenv
-BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend:1.76.1
-FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend:1.76.1
+BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend:1.76.2
+FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend:1.76.2
 ```
 
-Release `1.76.1` was published for `linux/amd64` and `linux/arm64`. For an
+Release `1.76.2` was published for `linux/amd64` and `linux/arm64`. For an
 immutable deployment, pin the verified multi-architecture index digests:
 
 ```dotenv
-BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend@sha256:070f57b64277fe4a206cba1d4c37a1e64e515230854a8a6ea14e86309c392cdd
-FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend@sha256:0c845aeedaefebbfaef2da66a7fc0b18ecb11d21e3926a94ac79d377e5a72f22
+BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend@sha256:<published-backend-index-digest>
+FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend@sha256:<published-frontend-index-digest>
 ```
 
 Docker Hub listings: [backend and worker](https://hub.docker.com/r/mntdew1031/raven-ledger-backend)
@@ -472,6 +472,10 @@ network. If the endpoint requires authentication, set `LLM_API_KEY`.
 Small local models usually perform better with smaller batches; larger models
 can use a larger value to reduce round trips. Raven lists model names reported
 by the endpoint in Settings. Use an exact name that the gateway accepts.
+
+Raven does not preload models or send periodic keep-alive prompts. Your model
+server may unload an idle model and load the chosen one only when you test the
+connection, request suggestions, or use the assistant.
 
 Rules and deterministic categorization run before AI. Suggestions are limited
 to existing category names and remain unreviewed until a person approves them.
@@ -624,8 +628,8 @@ same node.
 Build clean images from this sanitized source tree:
 
 ```bash
-docker build --pull -f backend/Dockerfile -t raven-ledger-backend:1.76.1 .
-docker build --pull -f Dockerfile.frontend -t raven-ledger-frontend:1.76.1 .
+docker build --pull -f backend/Dockerfile -t raven-ledger-backend:1.76.2 .
+docker build --pull -f Dockerfile.frontend -t raven-ledger-frontend:1.76.2 .
 ```
 
 Both builds use the root `.dockerignore`; virtual environments, dependency and
@@ -636,10 +640,10 @@ instruction files are excluded. Both runtime images include `LICENSE` and
 Inspect before publishing:
 
 ```bash
-docker image inspect raven-ledger-backend:1.76.1
-docker image inspect raven-ledger-frontend:1.76.1
-docker history --no-trunc raven-ledger-backend:1.76.1
-docker history --no-trunc raven-ledger-frontend:1.76.1
+docker image inspect raven-ledger-backend:1.76.2
+docker image inspect raven-ledger-frontend:1.76.2
+docker history --no-trunc raven-ledger-backend:1.76.2
+docker history --no-trunc raven-ledger-frontend:1.76.2
 ```
 
 Confirm there are no secrets, private URLs, personal filesystem paths, `.env`
@@ -654,14 +658,14 @@ docker buildx create --use --name raven-builder
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --file backend/Dockerfile \
-  --tag docker.io/mntdew1031/raven-ledger-backend:1.76.1 \
+  --tag docker.io/mntdew1031/raven-ledger-backend:1.76.2 \
   --tag docker.io/mntdew1031/raven-ledger-backend:latest \
   --push .
 
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --file Dockerfile.frontend \
-  --tag docker.io/mntdew1031/raven-ledger-frontend:1.76.1 \
+  --tag docker.io/mntdew1031/raven-ledger-frontend:1.76.2 \
   --tag docker.io/mntdew1031/raven-ledger-frontend:latest \
   --push .
 ```

@@ -348,29 +348,17 @@ class TestReadingTheLedgerCannotProduceABareFiveHundred:
 
 class TestTheChosenModelReachesEveryCaller:
     """
-    The 1.53.x model picker only ever plumbed the chat path. `probe`,
-    `keep_warm`, the worker heartbeat and the config signature all kept
-    reading `LLM_MODEL` — `local` on Alex's deployment, a name his gateway
-    rejects with a 400.
+    The 1.53.x model picker only ever plumbed the chat path. `probe`, the
+    worker heartbeat and the config signature all kept reading `LLM_MODEL` —
+    `local` on Alex's deployment, a name his gateway rejects with a 400.
 
-    Three consequences, all of which he saw:
+    Two consequences, both of which he saw:
 
     - **Test connection was broken.** It reported "Invalid model name passed
       in model=local" while every real request worked.
     - **Settings said "Worker AI settings: local"**, which was true and looked
       like a bug in the label rather than in the worker.
-    - **The warmer never warmed anything.** The ten-minute job that exists to
-      stop cold loads was warming a model that does not exist — while he was
-      complaining about cold loads.
     """
-
-    def test_the_warmer_takes_a_model(self):
-        import inspect
-
-        from app.services.ai import keep_warm
-
-        assert "model" in inspect.signature(keep_warm).parameters
-        assert "model=model" in inspect.getsource(keep_warm)
 
     def test_the_probe_takes_a_model(self):
         import inspect
@@ -387,9 +375,19 @@ class TestTheChosenModelReachesEveryCaller:
 
         source = inspect.getsource(worker._effective_model)
         assert "runtime_settings.effective_model" in source
-        # The heartbeat and the warmer must both use it.
-        assert "_effective_model()" in inspect.getsource(worker.warm_ai_model)
         assert "_effective_model()" in inspect.getsource(worker._beat)
+
+    def test_the_worker_never_preloads_an_ai_model(self):
+        """Models load only when a person deliberately invokes an AI feature."""
+        import inspect
+
+        from app import worker
+        from app.services import ai
+
+        worker_source = inspect.getsource(worker)
+        assert "warm_ai_model" not in worker_source
+        assert "keep_warm" not in worker_source
+        assert not hasattr(ai, "keep_warm")
 
     def test_a_heartbeat_never_fails_because_of_it(self):
         """

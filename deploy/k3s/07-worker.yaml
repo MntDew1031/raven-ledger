@@ -16,7 +16,7 @@ spec:
       containers:
         - name: worker
           # Use exactly the same backend image as the API deployment.
-          image: docker.io/mntdew1031/raven-ledger-backend:1.76.1
+          image: docker.io/mntdew1031/raven-ledger-backend:1.76.2
           imagePullPolicy: IfNotPresent
           command: ["arq", "app.worker.WorkerSettings"]
           envFrom:

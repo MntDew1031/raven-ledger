@@ -12,7 +12,7 @@ from app.database import SessionLocal
 from app.models import InstitutionConnection, SecurityEvent
 from app.security import verify_encryption_key
 from app.services import runtime_settings
-from app.services.ai import ai_configured, keep_warm, suggest_categories
+from app.services.ai import ai_configured, suggest_categories
 from app.services.categorizer import categorize_uncategorized
 from app.services.plaid_service import plaid_error_details, sync_connection
 from app.services.recurring import detect_recurring
@@ -266,13 +266,6 @@ async def nightly_backup(ctx):
     }
 
 
-async def warm_ai_model(ctx):
-    """Keep the *chosen* model resident so user requests never cold-load."""
-    if not ai_configured():
-        return {"warmed": False, "reason": "not_configured"}
-    return await keep_warm(await _effective_model())
-
-
 async def worker_heartbeat(ctx):
     await _beat(ctx["redis"])
     return {"ok": True}
@@ -319,8 +312,6 @@ class WorkerSettings:
         cron(nightly_backup, hour={3}, minute={10}),
         # Loan interest. Daily, but a no-op except on the month's first run.
         cron(accrue_loan_interest, hour={5}, minute={5}),
-        # Keep the AI model loaded. No-op when no endpoint is configured.
-        cron(warm_ai_model, minute=set(range(0, 60, 10)), run_at_startup=True),
     ]
     on_startup = startup
     redis_settings = RedisSettings.from_dsn(settings.redis_url)

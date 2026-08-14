@@ -453,32 +453,6 @@ async def list_models() -> dict:
         }
 
 
-async def keep_warm(model: str | None = None) -> dict:
-    """
-    Nudge the endpoint with a one-token request so the model stays resident.
-
-    A router with a small instance limit unloads idle models, and the next
-    real request then pays a multi-minute cold load — which, behind a proxy
-    with a request ceiling (Cloudflare cuts at 100s), surfaces to the user as
-    a gateway error rather than a slow answer.
-
-    **`model` must be the chosen one.** This ran for weeks without it, warming
-    whatever `LLM_MODEL` said — `local` on Alex's deployment, a name his
-    gateway rejects with a 400. So the job that exists to prevent cold loads
-    warmed nothing at all, every ten minutes, while he waited on cold loads.
-    """
-    if not ai_configured():
-        return {"warmed": False, "reason": "not_configured"}
-    try:
-        async with httpx.AsyncClient(
-            timeout=chat_timeout()
-        ) as client:
-            await _complete(client, [{"role": "user", "content": "ok"}], model=model)
-        return {"warmed": True, "model": model or settings.llm_model}
-    except (httpx.HTTPError, KeyError, ValueError, TypeError) as exc:
-        return {"warmed": False, "reason": str(exc)[:120]}
-
-
 async def probe(model: str | None = None) -> dict:
     """
     One tiny round trip to prove the endpoint, key, and model all work.

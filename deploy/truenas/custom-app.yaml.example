@@ -39,7 +39,7 @@ services:
     networks: [raven]
 
   backend:
-    image: docker.io/mntdew1031/raven-ledger-backend:1.76.2
+    image: docker.io/mntdew1031/raven-ledger-backend:1.76.3
     pull_policy: always
     restart: unless-stopped
     security_opt:
@@ -101,7 +101,7 @@ services:
     networks: [raven]
 
   worker:
-    image: docker.io/mntdew1031/raven-ledger-backend:1.76.2
+    image: docker.io/mntdew1031/raven-ledger-backend:1.76.3
     pull_policy: always
     restart: unless-stopped
     command: ["arq", "app.worker.WorkerSettings"]
@@ -144,7 +144,7 @@ services:
     networks: [raven]
 
   frontend:
-    image: docker.io/mntdew1031/raven-ledger-frontend:1.76.2
+    image: docker.io/mntdew1031/raven-ledger-frontend:1.76.3
     pull_policy: always
     restart: unless-stopped
     security_opt:

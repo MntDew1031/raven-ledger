@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     # nothing else, and it never marks a transaction reviewed.
     llm_base_url: str | None = None
     llm_api_key: str | None = None
-    # This default is overrideable from Settings or the deployment environment.
+    # This default is overridable from Settings or the deployment environment.
     # Gateways that route by model name must receive a name they actually expose.
     llm_model: str = "SP-gemma4:26b"
     llm_timeout_seconds: int = 120

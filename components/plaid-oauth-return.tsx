@@ -86,7 +86,7 @@ export function PlaidOAuthReturn() {
         setMessage(
           error
             ? "Your bank did not finish authorizing the connection."
-            : "The connection was cancelled.",
+            : "The connection was canceled.",
         );
       },
     }),

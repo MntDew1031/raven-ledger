@@ -174,9 +174,9 @@ function CategoryDialog({
               />
             </div>
             <div className="field">
-              <span>Budget behaviour</span>
+              <span>Budget behavior</span>
               <SelectField
-                ariaLabel="Budget behaviour"
+                ariaLabel="Budget behavior"
                 onChange={setBucket}
                 options={BUCKETS}
                 value={bucket}
@@ -184,11 +184,11 @@ function CategoryDialog({
             </div>
           </div>
           <div className="field">
-            <span>Colour</span>
+            <span>Color</span>
             <div className="swatch-row">
               {SWATCHES.map((option) => (
                 <button
-                  aria-label={`Colour ${option}`}
+                  aria-label={`Color ${option}`}
                   aria-pressed={color === option}
                   className={`swatch ${color === option ? "active" : ""}`}
                   key={option}
@@ -323,10 +323,10 @@ function TagDialog({
             <input autoFocus className="form-control" maxLength={80} onChange={(event) => setName(event.target.value)} placeholder="Wedding" required value={name} />
           </label>
           <div className="field">
-            <span>Colour</span>
+            <span>Color</span>
             <div className="swatch-row">
               {SWATCHES.map((option) => (
-                <button aria-label={`Colour ${option}`} aria-pressed={color === option} className={`swatch ${color === option ? "active" : ""}`} key={option} onClick={() => setColor(option)} style={{ backgroundColor: option }} type="button" />
+                <button aria-label={`Color ${option}`} aria-pressed={color === option} className={`swatch ${color === option ? "active" : ""}`} key={option} onClick={() => setColor(option)} style={{ backgroundColor: option }} type="button" />
               ))}
             </div>
           </div>

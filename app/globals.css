@@ -12656,11 +12656,11 @@ html[data-theme][data-accent] {
   --iris-b: #705a7f;
   --iris-c: #5f4a70;
   --iris: linear-gradient(115deg, var(--iris-a), var(--iris-b) 48%, var(--iris-c));
-  --green: #347a55;
+  --green: #317650;
   --green-soft: color-mix(in srgb, var(--green) 13%, var(--panel));
-  --red: #b84e47;
+  --red: #ad453f;
   --red-soft: color-mix(in srgb, var(--red) 12%, var(--panel));
-  --orange: #a66724;
+  --orange: #99591a;
   --orange-soft: color-mix(in srgb, var(--orange) 13%, var(--panel));
 }
 
@@ -12756,6 +12756,329 @@ html[data-theme="aurora"][data-accent] {
   --shadow: 0 22px 56px rgba(0, 0, 0, 0.46);
 }
 
+/* ========================================================================
+   1.76.3 legibility and interaction polish
+
+   Money labels should read like ordinary language, not like cramped badges.
+   Display type keeps its personality without closing the spaces between
+   words, and compact controls keep a 44px hit area on touch devices even
+   when the visible icon remains small.
+   ======================================================================== */
+
+.workspace .page-heading h1 {
+  max-width: min(880px, 100%);
+  letter-spacing: -0.024em;
+  line-height: 1.08;
+  overflow-wrap: normal;
+  text-wrap: balance;
+  word-break: normal;
+}
+
+.workspace :is(
+  .metric-card strong,
+  .account-overview strong,
+  .account-balance strong,
+  .transaction-amount strong,
+  .report-summary strong,
+  .filtered-financial-summary strong,
+  .budget-cell span
+) {
+  font-variant-numeric: tabular-nums;
+}
+
+.workspace :is(.metric-card, .category-item, .budget-category-name, .panel-heading) {
+  min-width: 0;
+}
+
+.workspace :is(.metric-card small, .panel-heading p, .category-item strong) {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .workspace .page-heading h1 {
+    max-width: 100%;
+    font-size: clamp(27px, 7.7vw, 31px);
+    letter-spacing: -0.018em;
+    line-height: 1.08;
+  }
+
+  /* Shared controls: WCAG's 44px target without forcing oversized artwork. */
+  .workspace :is(
+    .menu-button,
+    .sidebar-close,
+    .icon-button,
+    .profile-avatar,
+    .command-trigger,
+    .ledger-button,
+    .primary-button,
+    .ghost-button,
+    .text-button,
+    .filters-toggle,
+    .report-default-button,
+    .transaction-presets > button,
+    .report-presets > button,
+    .segmented-control button,
+    .budget-mode button,
+    .month-switcher button,
+    .paycheque-options button,
+    .layout-mode button
+  ) {
+    min-height: 44px;
+  }
+
+  .workspace :is(.menu-button, .sidebar-close, .icon-button, .command-trigger) {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .workspace .mobile-tabbar :where(a, button) {
+    min-height: 56px;
+    font-size: 11.5px;
+    line-height: 1.15;
+  }
+
+  .workspace :is(
+    .financial-pulse small,
+    .budget-pacing-copy > small,
+    .budget-pacing-stats small,
+    .filtered-financial-summary small,
+    .report-highlights small,
+    .report-highlights span,
+    .recurring-summary small,
+    .timeline-list time small,
+    .timeline-list article > span small,
+    .transaction-advanced-filters .field > span,
+    .transaction-bulk-bar > div small,
+    .account-overview span,
+    .budget-metrics .metric-card > span:first-child,
+    .budget-category-name small,
+    .budget-cell[data-label]::before
+  ) {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .workspace :is(.account-card small, .metric-card small) {
+    font-size: 11.5px;
+    line-height: 1.42;
+  }
+
+  .workspace :is(.account-health, .session-row em) {
+    font-size: 11px;
+  }
+
+  .workspace .budget-metrics .metric-card {
+    min-height: 104px;
+  }
+
+  .workspace .budget-metrics .metric-card small {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .workspace .budget-focus-bar .segmented-control button,
+  .workspace .rollover-toggle,
+  .workspace .transaction-direction-filter button {
+    min-height: 44px;
+    font-size: 11.5px;
+  }
+
+  .workspace :is(input, select, textarea, .select-trigger) {
+    min-height: 44px;
+  }
+
+  .workspace .ledger-button,
+  .workspace .month-switcher button,
+  .workspace .income-list > li > button.ghost-button {
+    min-width: 44px;
+  }
+
+  .workspace :is(.report-navigation a, .text-link, .category-name-button) {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .workspace .category-name-button {
+    flex: 1;
+  }
+
+  .workspace :is(
+    .theme-options small,
+    .session-row small,
+    .security-event-row small,
+    .finance-color-key small,
+    .appearance-language small,
+    .tag-empty small,
+    .mobile-flow-title small,
+    .mobile-flow-disclosure,
+    .mobile-flow-hint,
+    .budget-target-row .field > span,
+    .income-monthly small
+  ) {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .workspace :is(
+    .density-options button,
+    .api-key-scope button
+  ) {
+    min-height: 44px;
+  }
+
+  .workspace .transaction-summary-strip > span {
+    font-size: 11px;
+  }
+
+  .workspace .category-item {
+    min-height: 52px;
+  }
+
+  .workspace .category-item-actions {
+    opacity: 1;
+  }
+
+  .workspace .category-item-actions .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .workspace .collapsible-header {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 430px) {
+  .workspace-reports .report-summary span,
+  .workspace-budget .budget-metric > span:first-child {
+    font-size: 11px;
+  }
+}
+
+/* A regular iPhone is wider than the portrait breakpoint when rotated, but
+   it is still a phone. Without this short-landscape bridge the desktop sidebar
+   took 232px and the remaining header wrapped to 143px tall. Keep the compact
+   shell in both orientations while leaving page content free to use the extra
+   horizontal room. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 932px) {
+  body.navigation-open {
+    overflow: hidden;
+  }
+
+  .app-shell {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    width: min(84vw, 292px);
+    visibility: hidden;
+    transform: translateX(-102%);
+    transition: transform 180ms ease;
+    box-shadow: 24px 0 60px rgba(16, 24, 18, 0.2);
+  }
+
+  .sidebar.open {
+    visibility: visible;
+    transform: translateX(0);
+  }
+
+  .sidebar-close,
+  .menu-button {
+    display: grid;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    place-items: center;
+  }
+
+  .sidebar-close {
+    margin-left: auto;
+  }
+
+  .topbar {
+    min-height: 62px;
+    gap: 10px;
+    padding-top: env(safe-area-inset-top);
+    padding-right: calc(16px + env(safe-area-inset-right));
+    padding-bottom: 0;
+    padding-left: calc(16px + env(safe-area-inset-left));
+  }
+
+  .topbar .ledger-button {
+    min-width: 44px;
+    min-height: 44px;
+    margin-left: 4px;
+  }
+
+  .household-switcher {
+    min-width: 0;
+    margin-right: auto;
+    margin-left: 10px;
+  }
+
+  .household-switcher > span:last-child {
+    min-width: 0;
+  }
+
+  .household-switcher strong,
+  .household-switcher small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hide-on-mobile,
+  .quick-add-button,
+  .profile-avatar,
+  .signout-button {
+    display: none;
+  }
+
+  .content {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-tabbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 32;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+    background: color-mix(in srgb, var(--topbar) 94%, transparent);
+    padding-top: 4px;
+    padding-right: calc(8px + env(safe-area-inset-right));
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+    padding-left: calc(8px + env(safe-area-inset-left));
+    box-shadow: 0 -10px 35px rgba(23, 33, 26, 0.08);
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-tabbar :is(a, button) {
+    display: flex;
+    min-width: 0;
+    min-height: 50px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    padding: 4px 2px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 750;
+  }
+}
+
 /* Every workspace uses one interaction language. Page identity comes from
    typography and content, not from recolouring active controls. */
 .workspace-dashboard,
@@ -12835,5 +13158,23 @@ body::before {
   .appearance-language {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .workspace .dialog-close {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .workspace .swatch {
+    width: 44px;
+    height: 44px;
+  }
+
+  .workspace .budget-row-label small {
+    font-size: 11px;
   }
 }

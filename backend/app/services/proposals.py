@@ -82,7 +82,7 @@ def split_proposal(reply: str) -> tuple[str, dict | None]:
         try:
             candidate = json.loads(body)
         except (ValueError, TypeError):
-            logger.info("assistant proposed unparseable JSON: %r", body[:200])
+            logger.info("assistant proposed unparsable JSON: %r", body[:200])
             continue
         if isinstance(candidate, dict) and found is None:
             found = candidate

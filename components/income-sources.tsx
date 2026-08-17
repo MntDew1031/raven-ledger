@@ -59,7 +59,7 @@ const BLANK = {
  *
  * **One real pay date turns an average into a count.** Without it the best
  * Raven can say is $4,441.02 a month; with it, it can say August holds two
- * cheques and therefore $4,099.40, which is the number that matches the bank.
+ * paychecks and therefore $4,099.40, which is the number that matches the bank.
  */
 export function IncomeSources({
   onTotalChange,
@@ -297,8 +297,8 @@ export function IncomeSources({
           {missingAnchor.map((item) => item.name).join(" and ")} —{" "}
           {missingAnchor.length === 1 ? "this is" : "these are"} still an
           average. Add one real payday and the month figure becomes a count of
-          actual paydays, so a two-cheque month stops looking like a
-          three-cheque one.
+          actual paydays, so a two-paycheck month stops looking like a
+          three-paycheck one.
         </p>
       )}
 

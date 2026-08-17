@@ -151,8 +151,8 @@ pull, and are the default images used by `docker-compose.yml`:
 You may pre-pull the release before starting the stack:
 
 ```bash
-docker pull docker.io/mntdew1031/raven-ledger-backend:1.76.2
-docker pull docker.io/mntdew1031/raven-ledger-frontend:1.76.2
+docker pull docker.io/mntdew1031/raven-ledger-backend:1.76.3
+docker pull docker.io/mntdew1031/raven-ledger-frontend:1.76.3
 ```
 
 Manual pulls are optional. Running `docker compose up -d` later performs the
@@ -218,8 +218,8 @@ do not paste it into issues or chat.
 docker compose up -d
 ```
 
-This pulls `mntdew1031/raven-ledger-backend:1.76.2` and
-`mntdew1031/raven-ledger-frontend:1.76.2` when they are not already cached. To
+This pulls `mntdew1031/raven-ledger-backend:1.76.3` and
+`mntdew1031/raven-ledger-frontend:1.76.3` when they are not already cached. To
 compile the exact checkout locally instead, run:
 
 ```bash
@@ -322,11 +322,11 @@ Compose uses the public versioned images by default. Override the names to pin
 digests, test another release, or use your own registry:
 
 ```dotenv
-BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend:1.76.2
-FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend:1.76.2
+BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend:1.76.3
+FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend:1.76.3
 ```
 
-Release `1.76.2` was published for `linux/amd64` and `linux/arm64`. For an
+Release `1.76.3` was published for `linux/amd64` and `linux/arm64`. For an
 immutable deployment, pin the verified multi-architecture index digests:
 
 ```dotenv
@@ -628,8 +628,8 @@ same node.
 Build clean images from this sanitized source tree:
 
 ```bash
-docker build --pull -f backend/Dockerfile -t raven-ledger-backend:1.76.2 .
-docker build --pull -f Dockerfile.frontend -t raven-ledger-frontend:1.76.2 .
+docker build --pull -f backend/Dockerfile -t raven-ledger-backend:1.76.3 .
+docker build --pull -f Dockerfile.frontend -t raven-ledger-frontend:1.76.3 .
 ```
 
 Both builds use the root `.dockerignore`; virtual environments, dependency and
@@ -640,10 +640,10 @@ instruction files are excluded. Both runtime images include `LICENSE` and
 Inspect before publishing:
 
 ```bash
-docker image inspect raven-ledger-backend:1.76.2
-docker image inspect raven-ledger-frontend:1.76.2
-docker history --no-trunc raven-ledger-backend:1.76.2
-docker history --no-trunc raven-ledger-frontend:1.76.2
+docker image inspect raven-ledger-backend:1.76.3
+docker image inspect raven-ledger-frontend:1.76.3
+docker history --no-trunc raven-ledger-backend:1.76.3
+docker history --no-trunc raven-ledger-frontend:1.76.3
 ```
 
 Confirm there are no secrets, private URLs, personal filesystem paths, `.env`
@@ -658,14 +658,14 @@ docker buildx create --use --name raven-builder
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --file backend/Dockerfile \
-  --tag docker.io/mntdew1031/raven-ledger-backend:1.76.2 \
+  --tag docker.io/mntdew1031/raven-ledger-backend:1.76.3 \
   --tag docker.io/mntdew1031/raven-ledger-backend:latest \
   --push .
 
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --file Dockerfile.frontend \
-  --tag docker.io/mntdew1031/raven-ledger-frontend:1.76.2 \
+  --tag docker.io/mntdew1031/raven-ledger-frontend:1.76.3 \
   --tag docker.io/mntdew1031/raven-ledger-frontend:latest \
   --push .
 ```

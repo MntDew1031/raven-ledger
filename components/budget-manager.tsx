@@ -648,14 +648,14 @@ export function BudgetManager() {
               <span>Left over</span>
               {/* No income figure means no answer, not an answer of minus the
                   whole plan. Showing −$1,500 in red because nobody has entered
-                  a paycheque yet is a false alarm about a month that may be
+                  a paycheck yet is a false alarm about a month that may be
                   perfectly funded. */}
               <strong>{income ? currency(leftOver) : "—"}</strong>
               <small>
                 {income
                   ? unplannedSpend > 0
-                    ? `Income less the plan, less ${currency(unplannedSpend)} unplanned`
-                    : "Income less the plan. Nothing unplanned yet"
+                    ? `Expected income minus the plan minus ${currency(unplannedSpend)} in unplanned spending`
+                    : "Expected income minus the plan; no unplanned spending"
                   : "Add expected income to see this"}
               </small>
             </article>
@@ -669,22 +669,22 @@ export function BudgetManager() {
                   ? "three this month"
                   : "two this month"
               }
-              title="Paycheques"
+              title="Paychecks"
             >
             <section className="paycheque-toggle">
               <div>
                 <strong>
                   {context.income.has_extra_paycheque
-                    ? `${monthLabel} is a three-paycheque month`
-                    : `${monthLabel} is an ordinary two-paycheque month`}
+                    ? `${monthLabel} is a three-paycheck month`
+                    : `${monthLabel} is an ordinary two-paycheck month`}
                 </strong>
                 <p>
                   Worked out from the paydays on file. Override it for this
-                  month if a cheque lands a day either side of the boundary and
+                  month if a check lands a day on either side of the boundary and
                   the bank disagrees with the calendar.
                 </p>
               </div>
-              <div className="paycheque-options" role="group" aria-label="Paycheque count">
+              <div className="paycheque-options" role="group" aria-label="Paycheck count">
                 {[
                   { value: null, label: "Auto" },
                   { value: false, label: "Two" },

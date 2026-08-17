@@ -117,7 +117,7 @@ export function CashForecast() {
             {Number(data.balance) > 0 ? currency(Number(data.balance)) : "Nothing"}{" "}
             in cash
             {Number(data.committed_before_payday) < 0
-              ? `, less ${currency(Math.abs(Number(data.committed_before_payday)))} of bills due`
+              ? ` minus ${currency(Math.abs(Number(data.committed_before_payday)))} in bills due`
               : ""}
             {data.next_payday ? ` before ${shortDate(data.next_payday)}` : ""}.
             {/* No incoming money is counted: being told you have less than you
@@ -171,13 +171,13 @@ export function CashForecast() {
               dataKey="date"
               interval="preserveStartEnd"
               minTickGap={44}
-              tick={{ fontSize: 9 }}
+              tick={{ fontSize: 11 }}
               tickFormatter={shortDate}
               tickLine={false}
             />
             <YAxis
               axisLine={false}
-              tick={{ fontSize: 9 }}
+              tick={{ fontSize: 11 }}
               tickFormatter={(value: number) =>
                 Math.abs(value) >= 1000
                   ? `$${Math.round(value / 1000)}k`

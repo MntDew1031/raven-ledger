@@ -10,7 +10,12 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 # pg_dump/pg_restore/psql drive backups and test restores. Alpine keeps the
 # runtime small without pulling Perl into a service that never executes it.
-RUN apk add --no-cache postgresql17-client
+# A minimum version keeps release caches from reusing a client layer after the
+# Alpine security repository has moved forward. Newer compatible patch
+# releases remain eligible automatically.
+RUN apk add --no-cache \
+  'postgresql17-client>=17.11-r0' \
+  'libpq>=18.5-r0'
 RUN addgroup --system raven \
   && adduser --system --ingroup raven raven \
   && mkdir -p /backups \

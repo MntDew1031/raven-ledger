@@ -366,6 +366,18 @@ export function SettingsManager() {
         body: JSON.stringify(patch),
       });
       setAiConfig(updated);
+      if (patch.model) {
+        setAi((current) =>
+          current ? { ...current, model: updated.model } : current,
+        );
+        // Saving queues an immediate worker status refresh. Give that small
+        // background job a moment, then replace the stale pre-save diagnostic.
+        window.setTimeout(() => {
+          void apiFetch<WorkerStatus>("/system/worker")
+            .then(setWorker)
+            .catch(() => {});
+        }, 1800);
+      }
       setAiConfigNotice(
         patch.model
           ? `Now using ${updated.model}.`
@@ -1002,15 +1014,11 @@ export function SettingsManager() {
               </div>
               {worker?.ai_config_matches_backend === false && (
                 <p className="ai-config-attention ai-probe-result">
-                  The worker is online, so transaction categorization remains
-                  available. For consistent answers everywhere, give the
-                  backend and worker the same{" "}
                   {worker.ai_model_matches_backend === false
-                    ? "model"
+                    ? "The worker has not reported the saved model yet. It reads the shared choice before its next AI job, and this status should refresh shortly."
                     : worker.ai_endpoint_matches_backend === false
-                      ? "LLM URL"
-                      : "AI environment"}
-                  , then recreate both containers.
+                      ? "The backend and worker use different LLM URLs. Set the same LLM_BASE_URL on both containers, then recreate them."
+                      : "The backend and worker have different AI environment settings. Recreate both containers from the same configuration."}
                 </p>
               )}
               <div className="export-actions">

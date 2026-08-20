@@ -255,37 +255,39 @@ class TestTheModelIsChosenNotHardcoded:
         assert "max(" in source and "min(" in source
 
 
-class TestTheCacheHoldsWhatIsStoredNotWhatWasResolved:
+class TestRuntimeSettingsAreSharedAcrossProcesses:
     """
-    The settings page asks with a default of `None` precisely to learn whether
-    anybody has chosen a model. Caching the *resolved* value folded the first
-    caller's default into the cache — and the first caller is
-    `effective_model`, which passes the deployment's model — so after one
-    categorization run the page reported the deployment's own model as "chosen
-    here". A choice nobody made, and no way to tell the two apart again.
+    The backend saves the model while the worker categorizes. A process-local
+    cache cannot be invalidated across that boundary, so it made the worker
+    keep using the previous model until its container restarted.
     """
 
-    def test_a_default_from_one_caller_does_not_leak_into_another(self):
+    def test_a_later_read_observes_a_change_made_by_another_process(self):
         import asyncio
 
         from app.services import runtime_settings
 
-        class NothingStored:
+        class SharedSetting:
+            value = None
+
             async def get(self, _model, _key):
-                return None
+                return self.value
 
         async def check():
-            runtime_settings.invalidate()
-            db = NothingStored()
-            # The hot path asks with the deployment's value as its fallback.
+            db = SharedSetting()
             first = await runtime_settings.get(db, "ai.model", "llama3.2")
-            # The settings page asks with None, to learn "did anyone choose?"
+            db.value = type("Row", (), {"value": {"value": "qwen"}})()
             second = await runtime_settings.get(db, "ai.model", None)
             return first, second
 
         first, second = asyncio.run(check())
         assert first == "llama3.2"
-        assert second is None, "a caller's fallback was cached as if stored"
+        assert second == "qwen"
+
+    def test_the_process_local_cache_is_gone(self):
+        from app.services import runtime_settings
+
+        assert not hasattr(runtime_settings, "_cache")
 
     def test_the_page_can_still_tell_where_a_value_came_from(self):
         import inspect

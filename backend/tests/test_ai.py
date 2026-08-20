@@ -429,6 +429,31 @@ class TestTheChosenModelReachesEveryCaller:
         assert "ai_endpoint_signature" in source
         assert "ai_model" in source
 
+    def test_a_saved_choice_queues_an_immediate_worker_refresh(self):
+        import inspect
+
+        from app.api import system
+        from app import worker
+
+        assert "refresh_worker_status" in inspect.getsource(
+            system.write_ai_config
+        )
+        assert worker.refresh_worker_status in worker.WorkerSettings.functions
+
+    def test_a_gateway_error_names_the_selected_model(self, monkeypatch):
+        import httpx
+
+        from app.services import ai
+
+        monkeypatch.setattr(ai.settings, "llm_base_url", "http://ai.test/v1")
+        request = httpx.Request("POST", "http://ai.test/v1/chat/completions")
+        response = httpx.Response(400, request=request, text="unknown model")
+        rendered = ai._describe_status_error(
+            httpx.HTTPStatusError("bad", request=request, response=response),
+            "SP-qwen3.8:27b",
+        )
+        assert "SP-qwen3.8:27b" in rendered
+
 
 class TestTwoBackendsBehindOneGateway:
     """

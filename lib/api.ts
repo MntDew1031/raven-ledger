@@ -34,6 +34,13 @@ function detailMessage(detail: unknown, status: number): string {
  * the Next.js proxy — rather than by the API itself.
  */
 function gatewayMessage(status: number): string {
+  if (status === 500) {
+    return (
+      "The web gateway stopped before Raven could answer. If you just changed " +
+      "AI models, it may still be loading; wait a moment, then test the model " +
+      "in Settings and try again."
+    );
+  }
   if (status === 502 || status === 504) {
     return (
       "The request timed out before the server answered. If this was an AI " +
@@ -75,7 +82,7 @@ export async function apiFetch<T>(
     // document into the UI is useless and alarming, so summarise by status.
     const body = await response.text();
     const looksLikeHtml = /^\s*<(!doctype|html)/i.test(body);
-    if (looksLikeHtml || body.length > 400) {
+    if (looksLikeHtml || body.length > 400 || response.status >= 500) {
       throw new ApiError(gatewayMessage(response.status), response.status);
     }
     throw new ApiError(

@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 
@@ -42,9 +43,11 @@ from app.worker import (
     WORKER_HEARTBEAT_KEY,
     ai_endpoint_signature,
     ai_config_signature,
+    enqueue_job,
 )
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/system", tags=["system"])
 
@@ -210,6 +213,13 @@ async def write_ai_config(
     if payload.min_batch_size is not None:
         await put(db, AI_MIN_BATCH, int(payload.min_batch_size), auth.user.id)
     await db.commit()
+    # The worker reads the shared PostgreSQL setting before every AI job. Ask
+    # it to refresh its visible status now too, so Settings does not show the
+    # previous model for up to five minutes after a successful save.
+    try:
+        await enqueue_job("refresh_worker_status")
+    except Exception:  # noqa: BLE001 - saving does not depend on diagnostics
+        logger.warning("could not queue the worker AI status refresh", exc_info=True)
     return await snapshot(db, can_change=True)
 
 

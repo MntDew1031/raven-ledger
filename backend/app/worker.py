@@ -271,6 +271,12 @@ async def worker_heartbeat(ctx):
     return {"ok": True}
 
 
+async def refresh_worker_status(ctx):
+    """Refresh diagnostics immediately after an operator changes AI settings."""
+    await _beat(ctx["redis"])
+    return {"ok": True}
+
+
 async def purge_security_events(ctx):
     """Apply the documented activity-log retention window once a day."""
     cutoff = datetime.now(timezone.utc) - timedelta(
@@ -298,6 +304,7 @@ class WorkerSettings:
         categorize_household,
         ai_review_household,
         detect_recurring_household,
+        refresh_worker_status,
     ]
     cron_jobs = [
         # Every five minutes, so the API can tell a dead worker from a slow job.

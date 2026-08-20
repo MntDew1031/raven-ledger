@@ -1,7 +1,7 @@
 FROM python:3.13-alpine
 
 LABEL org.opencontainers.image.title="Raven Ledger backend" \
-  org.opencontainers.image.version="1.76.3" \
+  org.opencontainers.image.version="1.76.4" \
   org.opencontainers.image.licenses="Apache-2.0"
 
 ENV PYTHONDONTWRITEBYTECODE=1

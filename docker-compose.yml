@@ -50,7 +50,7 @@ services:
     networks: [raven]
 
   backend:
-    image: ${BACKEND_IMAGE:-docker.io/mntdew1031/raven-ledger-backend:1.76.3}
+    image: ${BACKEND_IMAGE:-docker.io/mntdew1031/raven-ledger-backend:1.76.4}
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -115,7 +115,7 @@ services:
     networks: [raven]
 
   worker:
-    image: ${BACKEND_IMAGE:-docker.io/mntdew1031/raven-ledger-backend:1.76.3}
+    image: ${BACKEND_IMAGE:-docker.io/mntdew1031/raven-ledger-backend:1.76.4}
     restart: unless-stopped
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
@@ -159,7 +159,7 @@ services:
     networks: [raven]
 
   frontend:
-    image: ${FRONTEND_IMAGE:-docker.io/mntdew1031/raven-ledger-frontend:1.76.3}
+    image: ${FRONTEND_IMAGE:-docker.io/mntdew1031/raven-ledger-frontend:1.76.4}
     build:
       context: .
       dockerfile: Dockerfile.frontend

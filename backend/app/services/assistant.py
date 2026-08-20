@@ -798,6 +798,7 @@ async def answer(
     # odd row, one query — left FastAPI to turn the exception into a bare
     # "Internal Server Error" with nothing to act on. That is what Alex saw
     # when he asked which subscriptions he pays for.
+    chosen_model: str | None = None
     try:
         snapshot = await build_snapshot(db, household_id, history)
         system = f"{SYSTEM_PROMPT}\n\n{snapshot}"
@@ -807,8 +808,18 @@ async def answer(
             {"role": "system", "content": system},
             *history,
         ]
+        chosen_model = await effective_model(db)
         async with httpx.AsyncClient(timeout=chat_timeout()) as client:
-            reply = await _complete(client, payload, model=await effective_model(db))
+            reply = await _complete(client, payload, model=chosen_model)
+        if not reply:
+            return {
+                "ok": False,
+                "error": (
+                    f"{chosen_model} returned no visible answer. Test that model "
+                    "in Settings; if it uses a reasoning mode, make sure the "
+                    "gateway also returns the final response content."
+                ),
+            }
         text, suggestion = split_suggested_memory(reply)
         text, proposal = split_proposal(text)
         return {
@@ -818,7 +829,10 @@ async def answer(
             "proposal": proposal,
         }
     except httpx.HTTPStatusError as exc:
-        return {"ok": False, "error": _describe_status_error(exc)}
+        return {
+            "ok": False,
+            "error": _describe_status_error(exc, chosen_model),
+        }
     except httpx.HTTPError as exc:
         return {"ok": False, "error": _describe_transport_error(exc)}
     except (KeyError, ValueError, TypeError):

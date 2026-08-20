@@ -401,7 +401,9 @@ def chat_timeout(read_seconds: float | None = None) -> httpx.Timeout:
     )
 
 
-def _describe_status_error(exc: httpx.HTTPStatusError) -> str:
+def _describe_status_error(
+    exc: httpx.HTTPStatusError, model: str | None = None
+) -> str:
     code = exc.response.status_code
     detail = exc.response.text[:160].strip()
     if code in (401, 403):
@@ -415,9 +417,10 @@ def _describe_status_error(exc: httpx.HTTPStatusError) -> str:
             "duplicating the /v1 suffix."
         )
     if code == 400:
+        chosen = model or settings.llm_model
         return (
             f"400 from {_base()} — the gateway rejected the request, usually "
-            f"because model '{settings.llm_model}' is not one it serves. "
+            f"because model '{chosen}' is not one it serves. "
             f"{detail}"
         )
     return f"HTTP {code} from {_base()}. {detail}"
@@ -489,7 +492,7 @@ async def probe(model: str | None = None) -> dict:
             "reply_sample": content[:80],
         }
     except httpx.HTTPStatusError as exc:
-        return {"ok": False, "error": _describe_status_error(exc)}
+        return {"ok": False, "error": _describe_status_error(exc, model)}
     except httpx.HTTPError as exc:
         return {"ok": False, "error": _describe_transport_error(exc)}
     except (KeyError, ValueError, TypeError):

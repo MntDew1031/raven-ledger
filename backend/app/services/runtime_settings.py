@@ -43,14 +43,16 @@ WRITABLE = frozenset({AI_MODEL, AI_MIN_BATCH})
 MIN_BATCH_FLOOR = 1
 MIN_BATCH_CEILING = 40
 
-# Read on the hot path — every categorization batch and every chat turn — so
-# the value is held rather than fetched each time. Cleared on write, and the
-# process is small enough that a stale read cannot outlive a request by much.
-_cache: dict[str, Any] = {}
-
-
 def invalidate() -> None:
-    _cache.clear()
+    """Compatibility hook for callers from before settings became uncached.
+
+    The backend and worker are separate processes. A process-local cache was
+    therefore impossible to invalidate from the Settings save handled by the
+    backend: the worker could keep the previous model until it was restarted.
+    App settings are two tiny primary-key lookups, so correctness is worth far
+    more than avoiding that query.
+    """
+    return None
 
 
 async def get(db: AsyncSession, key: str, default: Any = None) -> Any:
@@ -66,12 +68,8 @@ async def get(db: AsyncSession, key: str, default: Any = None) -> Any:
     choice had been made that no one had made, and the deployment's own model
     could never be distinguished from a picked one.
     """
-    if key in _cache:
-        stored = _cache[key]
-    else:
-        row = await db.get(AppSetting, key)
-        stored = row.value.get("value") if row else None
-        _cache[key] = stored
+    row = await db.get(AppSetting, key)
+    stored = row.value.get("value") if row else None
     return default if stored is None else stored
 
 

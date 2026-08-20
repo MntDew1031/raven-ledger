@@ -3,6 +3,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  experimental: {
+    // A cold local 27B/35B model can spend well over Next's default 30 seconds
+    // loading into VRAM before it produces the first byte. Raven's backend is
+    // intentionally willing to wait; its same-origin rewrite must not give up
+    // first and replace the useful API error with "Internal Server Error".
+    proxyTimeout: 10 * 60 * 1000,
+  },
   async headers() {
     const scriptPolicy =
       process.env.NODE_ENV === "development"

@@ -330,8 +330,8 @@ Release `1.76.4` was published for `linux/amd64` and `linux/arm64`. For an
 immutable deployment, pin the verified multi-architecture index digests:
 
 ```dotenv
-BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend@sha256:5667e29aa8a40a294c745667e7111acd240fd4f14e99a4db8033649f50d14ed8
-FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend@sha256:ab0e4332e6463defd0a4cfa7131af9b8ad66861709cdac3590d4febca796f867
+BACKEND_IMAGE=docker.io/mntdew1031/raven-ledger-backend@sha256:8025398de49ae9e13f9bb8320ddb65491c98e2a1f5a626e2d56968d5693b873c
+FRONTEND_IMAGE=docker.io/mntdew1031/raven-ledger-frontend@sha256:d54bec582229774534816b175c75fdf0216da4c9ca3cc442241bb045e67a5b89
 ```
 
 Docker Hub listings: [backend and worker](https://hub.docker.com/r/mntdew1031/raven-ledger-backend)
